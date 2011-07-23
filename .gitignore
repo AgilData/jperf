@@ -1,3 +1,5 @@
 _*
 *.jar
 dist
+*.csv
+*.xml
