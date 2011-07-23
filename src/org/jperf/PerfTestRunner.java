@@ -86,13 +86,9 @@ public class PerfTestRunner {
         }));
     }
 
-    public List<PerfResult> run(final Class testClass) throws IOException {
-        return run(testClass, null);
-    }
+    public List<PerfResult> run(final PerfTestFactory testFactory) throws IOException {
 
-    public List<PerfResult> run(final Class testClass, final Object param[]) throws IOException {
-
-        logger.info("JPerf is testing " + testClass.getName());
+        logger.info("JPerf is testing " + testFactory.getClass());
 
         DecimalFormat fmt = new DecimalFormat("#,##0");
 
@@ -103,7 +99,7 @@ public class PerfTestRunner {
             while (clientThreads.size() < threadCount) {
                 PerfTest test = null;
                 try {
-                    test = createTestInstance(testClass, param);
+                    test = createTestInstance(testFactory);
                 } catch (Throwable e) {
                     logger.error("Failed to create test", e);
                     break;
@@ -181,13 +177,13 @@ public class PerfTestRunner {
         stop();
 
         if (resultFilename == null) {
-            resultFilename = "JPerf-" + testClass.getName();
+            resultFilename = "JPerf-" + testFactory.getClass().getName();
         }
 
         File resultFile = new File(resultFilename + ".xml");
         logger.info("Writing results to " + resultFile.getAbsolutePath());
         FileOutputStream os = new FileOutputStream(resultFile);
-        writeXmlResults(os, testClass.getName());
+        writeXmlResults(os, testFactory.getClass().getName());
         os.close();
 
         resultFile = new File(resultFilename + ".csv");
@@ -237,15 +233,11 @@ public class PerfTestRunner {
 
     }
 
-    private PerfTest createTestInstance(Class testClass, Object[] param) throws Exception {
-        PerfTest test;// create an instance of the test class
-        if (debug) {
-            logger.info("Creating instance of test class '" + testClass.getName() + "'");
-        }
+    private PerfTest createTestInstance(PerfTestFactory factory) throws Exception {
 
         Timer timer = new Timer();
         timer.start();
-        test = createTest(testClass, param);
+        PerfTest test = factory.createPerfTest();
         timer.stop();
         testCreateTime = timer.value();
 

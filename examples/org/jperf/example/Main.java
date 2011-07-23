@@ -1,5 +1,7 @@
 package org.jperf.example;
 
+import org.jperf.PerfTest;
+import org.jperf.PerfTestFactory;
 import org.jperf.PerfTestRunner;
 
 /**
@@ -14,11 +16,16 @@ public class Main {
         doTest(ThreadLocalDateFormatTest.class);
     }
 
-    private static void doTest(Class theClass) throws Exception {
+    private static void doTest(final Class theClass) throws Exception {
         PerfTestRunner r = new PerfTestRunner();
         r.setMinClient(1);
         r.setMaxClient(10);
         r.setTestPeriod(500);
-        r.run(theClass);
+        r.run(new PerfTestFactory() {
+            @Override
+            public PerfTest createPerfTest() throws Exception {
+                return (PerfTest) theClass.newInstance();
+            }
+        });
     }
 }

@@ -1,4 +1,6 @@
 <project name="jperf" default="test">
+    
+    <property name="version" value="1.1" />
 
     <target name="build">
 
@@ -8,19 +10,19 @@
 
         <delete dir="dist" />
         <mkdir dir="dist" />
-        <jar jarfile="dist/jperf-1.1.jar" basedir="_classes" />
+        <jar jarfile="dist/jperf-${version}.jar" basedir="_classes" />
 
         <javac srcdir="examples" destdir="_classes">
-            <classpath path="dist/jperf-1.1.jar" />
+            <classpath path="dist/jperf-${version}.jar" />
         </javac>
-        <jar jarfile="dist/jperf-examples-1.1.jar" basedir="_classes" />
+        <jar jarfile="dist/jperf-examples-${version}.jar" basedir="_classes" />
 
     </target>
 
     <target name="test" depends="build">
         <java classname="org.jperf.example.Main">
-            <classpath path="dist/jperf-1.1.jar" />
-            <classpath path="dist/jperf-examples-1.1.jar" />
+            <classpath path="dist/jperf-${version}.jar" />
+            <classpath path="dist/jperf-examples-${version}.jar" />
         </java>
 
     </target>
