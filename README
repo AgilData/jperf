@@ -1,5 +1,7 @@
 JPerf is a simple performance and scalability testing framework for Java.
 
+JPerf is distributed under the Apache License 2.0 (see LICENSE.txt).
+
 The framework source code is in the 'src' directory and working examples are in the 'examples' directory.
 
 Simply run 'ant' to compile the framework and run the examples (requires Apache Ant to be on the path).
