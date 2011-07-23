@@ -26,7 +26,7 @@ HTTP example config:
 
 Example output:
 
-jperf andy$ java -classpath 3rdparty/jdom/jdom.jar:dist/jperf-1.1.jar:../dbshards/3rdparty/mysql-connector-j/mysql-connector-java-5.1.12-bin.jar org.jperf.Main examples/example-jdbc-config.xml
+jperf andy$ java -classpath 3rdparty/jdom/jdom.jar:dist/jperf-1.1.jar:../3rdparty/mysql-connector-j/mysql-connector-java-5.1.12-bin.jar org.jperf.Main examples/example-jdbc-config.xml
 [INFO] JPerf is testing class org.jperf.jdbc.JdbcPerfTestFactory
 [INFO]    1 test threads: 8,200 iterations/sec; avg iteration time: 0 ms ; 12,018 KB mem used; 2 active threads.
 [INFO]    2 test threads: 17,651 iterations/sec; avg iteration time: 0 ms ; 7,497 KB mem used; 3 active threads.
