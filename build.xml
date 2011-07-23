@@ -2,11 +2,19 @@
     
     <property name="version" value="1.1" />
 
+    <path id="apache.httpclient">
+        <fileset dir="3rdparty/apache-httpclient">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+
     <target name="build">
 
         <delete dir="_classes" />
         <mkdir dir="_classes" />
-        <javac srcdir="src" destdir="_classes" />
+        <javac srcdir="src" destdir="_classes">
+            <classpath refid="apache.httpclient" />
+        </javac>
 
         <delete dir="dist" />
         <mkdir dir="dist" />
