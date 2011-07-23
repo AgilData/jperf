@@ -1,0 +1,13 @@
+<project name="jperf" default="build">
+
+    <target name="build">
+
+        <delete dir="_classes" />
+        <mkdir dir="_classes" />
+        <javac srcdir="src" destdir="_classes">
+
+        </javac>
+
+    </target>
+
+</project>

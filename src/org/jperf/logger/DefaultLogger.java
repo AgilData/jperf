@@ -1,7 +1,5 @@
 package org.jperf.logger;
 
-import org.jperf.logger.JPerfLogger;
-
 /**
  * @author Andy Grove
  */
