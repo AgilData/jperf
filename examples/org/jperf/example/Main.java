@@ -18,8 +18,8 @@ public class Main {
 
     private static void doTest(final Class theClass) throws Exception {
         PerfTestRunner r = new PerfTestRunner();
-        r.setMinClient(1);
-        r.setMaxClient(10);
+        r.setMinThread(1);
+        r.setMaxThread(10);
         r.setTestPeriod(500);
         r.run(new PerfTestFactory() {
             @Override

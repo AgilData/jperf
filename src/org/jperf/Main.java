@@ -46,10 +46,10 @@ public class Main {
             PerfTestFactory factory = (PerfTestFactory) ctor.newInstance(arg);
 
             PerfTestRunner r = new PerfTestRunner();
-            r.setMinClient(      getIntAttr(root, "min-client",    1));
-            r.setMaxClient(      getIntAttr(root, "max-client",   50));
-            r.setTestPeriod(     getIntAttr(root, "test-period", 500));
-            r.setThreadIncrement(getIntAttr(root, "increment",     1));
+            r.setMinThread(getIntAttr(root, "min-thread", 1));
+            r.setMaxThread(getIntAttr(root, "max-thread", 50));
+            r.setTestPeriod(getIntAttr(root, "test-period", 500));
+            r.setThreadIncrement(getIntAttr(root, "increment", 1));
             r.run(factory);
 
         }

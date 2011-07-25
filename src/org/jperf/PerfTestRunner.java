@@ -26,14 +26,14 @@ public class PerfTestRunner {
     protected final Counter counter = new Counter();
 
     /**
-     * Minimum number of client threads to run.
+     * Minimum number of threads to run.
      */
-    protected int minClient = 10;
+    protected int minThread = 10;
 
     /**
-     * Maximum number of client threads to run.
+     * Maximum number of threads to run.
      */
-    protected int maxClient = 10;
+    protected int maxThread = 10;
 
     /**
      * Number of threads to increase clients by for each test period.
@@ -94,7 +94,7 @@ public class PerfTestRunner {
 
         results = new ArrayList<PerfResult>();
 
-        for (int threadCount = minClient; threadCount <= maxClient && !stop; threadCount += threadIncrement) {
+        for (int threadCount = minThread; threadCount <= maxThread && !stop; threadCount += threadIncrement) {
 
             while (clientThreads.size() < threadCount) {
                 PerfTest test = null;
@@ -206,7 +206,7 @@ public class PerfTestRunner {
         }
 
         // wait for all threads to stop (with a 5 second max wait right now - should be configurable really)
-        int aliveCount = maxClient;
+        int aliveCount = maxThread;
         long startWait = System.currentTimeMillis();
         while (aliveCount > 0) {
             aliveCount = 0;
@@ -443,20 +443,20 @@ public class PerfTestRunner {
         this.testPeriod = testPeriod;
     }
 
-    public int getMaxClient() {
-        return maxClient;
+    public int getMaxThread() {
+        return maxThread;
     }
 
-    public void setMaxClient(int maxClient) {
-        this.maxClient = maxClient;
+    public void setMaxThread(int maxThread) {
+        this.maxThread = maxThread;
     }
 
-    public int getMinClient() {
-        return minClient;
+    public int getMinThread() {
+        return minThread;
     }
 
-    public void setMinClient(int minClient) {
-        this.minClient = minClient;
+    public void setMinThread(int minThread) {
+        this.minThread = minThread;
     }
 
     public int getThreadIncrement() {
