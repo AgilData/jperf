@@ -18,36 +18,52 @@ public class Main {
             System.exit(-1);
         }
 
-        SAXBuilder builder = new SAXBuilder();
-        Document doc = builder.build(new FileInputStream(args[0]));
-        Element root = doc.getRootElement();
+        try {
 
-        Class theClass = Class.forName(root.getAttributeValue("class"));
+            SAXBuilder builder = new SAXBuilder();
+            Document doc = builder.build(new FileInputStream(args[0]));
+            Element root = doc.getRootElement();
 
-        List<Class> paramTypeList = new ArrayList<Class>();
-        List<String> paramList = new ArrayList<String>();
-        for (Object oParam : root.getChildren("param")) {
-            Element elParam = (Element) oParam;
-            //TODO: add support for other data types for factory ctor args
-            paramTypeList.add(String.class);
-            paramList.add(elParam.getAttributeValue("value"));
+            Class theClass = Class.forName(root.getAttributeValue("class"));
+
+            List<Class> paramTypeList = new ArrayList<Class>();
+            List<String> paramList = new ArrayList<String>();
+            for (Object oParam : root.getChildren("param")) {
+                Element elParam = (Element) oParam;
+                //TODO: add support for other data types for factory ctor args
+                paramTypeList.add(String.class);
+                paramList.add(elParam.getAttributeValue("value"));
+            }
+
+            // convert lists to arrays
+            Class[] argType = new Class[paramTypeList.size()];
+            paramTypeList.toArray(argType);
+
+            Object[] arg = new Object[paramList.size()];
+            paramList.toArray(arg);
+
+            Constructor ctor = theClass.getConstructor(argType);
+            PerfTestFactory factory = (PerfTestFactory) ctor.newInstance(arg);
+
+            PerfTestRunner r = new PerfTestRunner();
+            r.setMinClient(      getIntAttr(root, "min-client",    1));
+            r.setMaxClient(      getIntAttr(root, "max-client",   50));
+            r.setTestPeriod(     getIntAttr(root, "test-period", 500));
+            r.setThreadIncrement(getIntAttr(root, "increment",     1));
+            r.run(factory);
+
+        }
+        finally {
+            System.exit(0);
         }
 
-        // convert lists to arrays
-        Class[] argType = new Class[paramTypeList.size()];
-        paramTypeList.toArray(argType);
+    }
 
-        Object[] arg = new Object[paramList.size()];
-        paramList.toArray(arg);
-
-        Constructor ctor = theClass.getConstructor(argType);
-        PerfTestFactory factory = (PerfTestFactory) ctor.newInstance(arg);
-
-        PerfTestRunner r = new PerfTestRunner();
-        //TODO: read from config file
-        r.setMinClient(1);
-        r.setMaxClient(10);
-        r.run(factory);
-
+    private static int getIntAttr(Element el, String name, int defaultValue) {
+        String str = el.getAttributeValue(name);
+        if (str==null || str.trim().length()==0) {
+            return defaultValue;
+        }
+        return Integer.parseInt(str);
     }
 }
