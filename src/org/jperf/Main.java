@@ -53,6 +53,12 @@ public class Main {
             r.run(factory);
 
         }
+        catch (Throwable th) {
+            System.out.println("Failed: " + th.getMessage());
+            System.err.println("Failed: " + th.getMessage());
+            th.printStackTrace();
+            System.exit(-1);
+        }
         finally {
             System.exit(0);
         }
