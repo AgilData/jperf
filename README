@@ -10,7 +10,12 @@ JPerf can be used programatically or as a command-line tool with a configuration
 
 JDBC Example config:
 
-<jperf class="org.jperf.jdbc.JdbcPerfTestFactory">
+<jperf class="org.jperf.jdbc.JdbcPerfTestFactory"
+       min-thread="1"
+       max-thread="50"
+       test-period="1000"
+       stop-on-error="true">
+
     <param value="com.mysql.jdbc.Driver" />
     <param value="jdbc:mysql://localhost" />
     <param value="root" />
@@ -20,7 +25,7 @@ JDBC Example config:
 
 HTTP example config:
 
-<jperf class="org.jperf.web.WebTestFactory">
+<jperf class="org.jperf.web.WebTestFactory" stop-on-error="false">
     <param value="http://localhost/create_customer.php" />
 </jperf>
 

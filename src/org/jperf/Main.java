@@ -50,6 +50,7 @@ public class Main {
             r.setMaxThread(getIntAttr(root, "max-thread", 50));
             r.setTestPeriod(getIntAttr(root, "test-period", 500));
             r.setThreadIncrement(getIntAttr(root, "increment", 1));
+            r.setStopThreadOnError(getBoolAttr(root, "stop-on-error", true));
             r.run(factory);
 
         }
@@ -71,5 +72,21 @@ public class Main {
             return defaultValue;
         }
         return Integer.parseInt(str);
+    }
+
+    private static boolean getBoolAttr(Element el, String name, boolean defaultValue) {
+        String str = el.getAttributeValue(name);
+        if (str==null || str.trim().length()==0) {
+            return defaultValue;
+        }
+        return Boolean.parseBoolean(str);
+    }
+
+    private static String getStringAttr(Element el, String name, String defaultValue) {
+        String str = el.getAttributeValue(name);
+        if (str==null || str.trim().length()==0) {
+            return defaultValue;
+        }
+        return str;
     }
 }
