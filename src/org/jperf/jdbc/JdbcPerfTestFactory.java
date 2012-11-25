@@ -27,6 +27,7 @@ public class JdbcPerfTestFactory implements PerfTestFactory {
     @Override
     public PerfTest createPerfTest() throws Exception {
         Connection conn = DriverManager.getConnection(jdbcURL, jdbcUser, jdbcPass);
+        conn.setAutoCommit(true);
         return new JdbcPerfTest(conn, sql);
     }
 }
