@@ -58,6 +58,10 @@ public class PerfThread extends Thread {
                     iterations++;
                 }
                 catch (Throwable th) {
+                    if (Thread.interrupted()) {
+                        // errors are most likely due to thread being interrupted and can be ignored
+                        break;
+                    }
                     if (stopOnError) {
                         throw th;
                     }
@@ -80,7 +84,7 @@ public class PerfThread extends Thread {
 
     public synchronized void requestStop() {
         stopRequested = true;
-        logger.info("Interrupting thread {}", this.getName());
+        logger.debug("Interrupting thread {}", this.getName());
         this.interrupt();
     }
 
