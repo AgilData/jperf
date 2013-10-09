@@ -1,9 +1,9 @@
 package org.jperf;
 
-import org.jperf.logger.DefaultLogger;
-import org.jperf.logger.JPerfLogger;
 import org.jperf.util.Counter;
 import org.jperf.util.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -14,11 +14,17 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 /**
- * The JPerf test runner tests instances of PerfTest for performance and scalability.
+ * The JPerf test runner launches one or more threads to run instances of PerfTest and
+ * measures performance and scalability.
  *
  * @author Andy Grove
  */
 public class PerfTestRunner {
+
+    /**
+     * Logger.
+     */
+    protected static final Logger logger = LoggerFactory.getLogger(PerfTestRunner.class);
 
     /**
      * Counter for measuring throughput.
@@ -46,11 +52,6 @@ public class PerfTestRunner {
     protected int testPeriod = 500;
 
     /**
-     * Debug toggle.
-     */
-    protected boolean debug = false;
-
-    /**
      * Optional file to output results to.
      */
     protected String resultFilename;
@@ -66,11 +67,6 @@ public class PerfTestRunner {
     protected List<PerfResult> results;
 
     protected List<PerfThread> clientThreads = new ArrayList<PerfThread>();
-
-    /**
-     * Logger.
-     */
-    protected JPerfLogger logger = new DefaultLogger();
 
     public volatile boolean stop;
 
@@ -105,11 +101,9 @@ public class PerfTestRunner {
                     break;
                 }
 
-                if (debug) {
-                    logger.info("Starting thread to run tests");
-                }
+                logger.debug("Starting thread to run tests");
 
-                PerfThread perfThread = new PerfThread(this, test, counter, logger, stopThreadOnError);
+                PerfThread perfThread = new PerfThread(this, test, counter, stopThreadOnError);
                 clientThreads.add(perfThread);
                 perfThread.start();
             }
@@ -120,9 +114,7 @@ public class PerfTestRunner {
             // that already happened before we started the timer
             counter.reset();
 
-            if (debug) {
-                logger.info("Sleeping for " + testPeriod + "ms");
-            }
+            logger.debug("Sleeping for {} ms", testPeriod);
             long sleepStart = System.currentTimeMillis();
             while (!stop && (System.currentTimeMillis() - sleepStart) < testPeriod) {
                 try {
@@ -198,9 +190,12 @@ public class PerfTestRunner {
 
     public void stop() {
 
+        logger.info("Stopping tests");
+
         stop = true;
 
         // ask threads to finish
+        logger.info("Instructing threads to stop");
         for (PerfThread clientThread : clientThreads) {
             clientThread.requestStop();
         }
@@ -222,7 +217,7 @@ public class PerfTestRunner {
                 }
             }
             if (aliveCount > 0) {
-                logger.info("Waiting for " + aliveCount + " threads to finish");
+                logger.info("Waiting for {} threads to stop", aliveCount);
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
@@ -242,9 +237,7 @@ public class PerfTestRunner {
         testCreateTime = timer.value();
 
         // setup the test
-        if (debug) {
-            logger.info("Calling setUp");
-        }
+        logger.debug("Calling setUp");
 
         timer.reset();
         timer.start();
@@ -252,18 +245,12 @@ public class PerfTestRunner {
         timer.stop();
         testSetupTime = timer.value();
 
-        if (debug) {
-            logger.info("Called setUp OK");
-        }
+        logger.debug("Called setUp OK");
 
         // run the test once to make sure the test is working
-        if (debug) {
-            logger.info("Verifying test");
-        }
+        logger.debug("Verifying test");
         test.test();
-        if (debug) {
-            logger.info("Verified test OK");
-        }
+        logger.debug("Verified test OK");
         return test;
     }
 
@@ -287,11 +274,7 @@ public class PerfTestRunner {
                     boolean isSuitable = true;
                     for (int i = 0; i < paramTypes.length; i++) {
                         if (!paramTypes[i].isAssignableFrom(param[i].getClass())) {
-
-                            if (debug) {
-                                logger.debug(paramTypes[i].getClass() + " is not assignable from " + param[i].getClass());
-                            }
-
+                            logger.debug(paramTypes[i].getClass() + " is not assignable from " + param[i].getClass());
                             isSuitable = false;
                             break;
                         }
@@ -467,14 +450,6 @@ public class PerfTestRunner {
         this.threadIncrement = threadIncrement;
     }
 
-    public boolean isDebug() {
-        return debug;
-    }
-
-    public void setDebug(boolean debug) {
-        this.debug = debug;
-    }
-
     public boolean isStopThreadOnError() {
         return stopThreadOnError;
     }
@@ -489,14 +464,6 @@ public class PerfTestRunner {
 
     public void setResultFilename(String resultFilename) {
         this.resultFilename = resultFilename;
-    }
-
-    public JPerfLogger getLogger() {
-        return logger;
-    }
-
-    public void setLogger(JPerfLogger logger) {
-        this.logger = logger;
     }
 
 }

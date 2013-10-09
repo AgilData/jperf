@@ -1,4 +1,4 @@
 _*
 dist
 *.csv
-*.xml
+JPerf*.xml

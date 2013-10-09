@@ -1,0 +1,3 @@
+<jperf class="org.jperf.web.WebPerfTestFactory">
+    <param value="http://localhost" />
+</jperf>

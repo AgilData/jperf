@@ -1,0 +1,7 @@
+<jperf class="org.jperf.jdbc.JdbcPerfTestFactory" min-thread="1" max-thread="25" increment="1" test-period="500">
+    <param value="com.mysql.jdbc.Driver" />
+    <param value="jdbc:mysql://localhost" />
+    <param value="root" />
+    <param value="" />
+    <param value="SELECT * FROM test.foo" />
+</jperf>

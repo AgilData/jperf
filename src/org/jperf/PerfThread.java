@@ -1,23 +1,30 @@
 package org.jperf;
 
 import org.jperf.util.Counter;
-import org.jperf.logger.JPerfLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Created by IntelliJ IDEA.
-* User: andy
-* Date: Oct 25, 2008
-* Time: 9:40:19 PM
-* To change this template use File | Settings | File Templates.
-*/
+ * Thread that repeatedly invokes the PerfTest in a tight loop and updates the shared counter after each 
+ * invocation.
+ */
 public class PerfThread extends Thread {
 
+    /**
+     * Logger.
+     */
+    protected static final Logger logger = LoggerFactory.getLogger(PerfThread.class);
+
+    /**
+     * The test to invoke.
+     */
     protected PerfTest test;
+
+    /**
+     * Reference to shared counter.
+     */
     protected Counter counter;
-    protected JPerfLogger logger;
-
-    protected float averageIterationTime = 0;
-
+    
     protected boolean stopOnError;
 
     /**
@@ -27,26 +34,28 @@ public class PerfThread extends Thread {
 
     protected PerfTestRunner runner;
 
-    public PerfThread(PerfTestRunner runner, PerfTest test, Counter counter, JPerfLogger logger, boolean stopOnError) {
+    protected long startTime;
+
+    /**
+     * Number of iterations on this thread.
+     */
+    protected volatile long iterations;
+
+    public PerfThread(PerfTestRunner runner, PerfTest test, Counter counter, boolean stopOnError) {
         this.runner = runner;
         this.test = test;
         this.counter = counter;
-        this.logger = logger;
         this.stopOnError = stopOnError;
     }
 
     public void run() {
         try {
-            long t1 = System.currentTimeMillis();
-            int iterations = 0;
+            startTime = System.currentTimeMillis();
             while (!stopRequested() && !runner.stop) {
                 try {
                     test.test();
                     counter.next();
-                    // update average tx time
-                    long t2 = System.currentTimeMillis();
                     iterations++;
-                    averageIterationTime = (t2-t1)/(1.0f*iterations);
                 }
                 catch (Throwable th) {
                     if (stopOnError) {
@@ -71,6 +80,7 @@ public class PerfThread extends Thread {
 
     public synchronized void requestStop() {
         stopRequested = true;
+        logger.info("Interrupting thread {}", this.getName());
         this.interrupt();
     }
 
@@ -78,15 +88,7 @@ public class PerfThread extends Thread {
         return stopRequested;
     }
 
-    public JPerfLogger getLogger() {
-        return logger;
-    }
-
-    public void setLogger(JPerfLogger logger) {
-        this.logger = logger;
-    }
-
     public float getAverageIterationTime() {
-        return averageIterationTime;
+        return (System.currentTimeMillis()-startTime)/(1.0f*iterations);
     }
 }

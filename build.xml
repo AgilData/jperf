@@ -14,6 +14,20 @@
         </fileset>
     </path>
 
+    <path id="slf4j">
+        <fileset dir="3rdparty/slf4j-1.7.2">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+
+    <path id="log4j2">
+        <fileset dir="3rdparty/apache-log4j2-beta9">
+            <include name="log4j-api-*.jar" />
+            <include name="log4j-core-*.jar" />
+            <include name="log4j-slf4j-*.jar" />
+        </fileset>
+    </path>
+
     <target name="build">
 
         <delete dir="_classes" />
@@ -21,6 +35,7 @@
         <javac srcdir="src" destdir="_classes">
             <classpath refid="apache.httpclient" />
             <classpath refid="jdom" />
+            <classpath refid="slf4j" />
         </javac>
 
         <delete dir="dist" />
@@ -35,9 +50,15 @@
     </target>
 
     <target name="test" depends="build">
-        <java classname="org.jperf.example.Main">
+        <java classname="org.jperf.example.Main" fork="true">
+
+            <!-- logger settings -->
+            <jvmarg value="-Dlog4j.configurationFile=log4j2.xml" />
+
             <classpath path="dist/jperf-${version}.jar" />
             <classpath path="dist/jperf-examples-${version}.jar" />
+            <classpath refid="slf4j" />
+            <classpath refid="log4j2" />
         </java>
 
     </target>
