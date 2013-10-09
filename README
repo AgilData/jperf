@@ -50,6 +50,9 @@ jperf andy$ java -classpath 3rdparty/jdom/jdom.jar:dist/jperf-1.1.jar:../3rdpart
 JPerf includes binaries from the following open source projects:
 
 - Apache HttpComponents
+- Apache Log4j v2
 - JDOM
+- SLF4J
+
 
 Copyright (C) 2007-2012 Andy Grove.
