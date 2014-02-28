@@ -58,15 +58,9 @@ public class PerfThread extends Thread {
                     iterations++;
                 }
                 catch (Throwable th) {
-                    if (Thread.interrupted()) {
-                        // errors are most likely due to thread being interrupted and can be ignored
-                        break;
-                    }
+                    logger.error( "Test iteration threw an exception", th );
                     if (stopOnError) {
                         throw th;
-                    }
-                    else {
-                        logger.error( "Test iteration threw an exception", th );
                     }
                 }
             }
