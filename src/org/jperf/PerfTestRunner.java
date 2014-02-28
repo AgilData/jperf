@@ -34,7 +34,7 @@ public class PerfTestRunner {
     /**
      * Minimum number of threads to run.
      */
-    protected int minThread = 10;
+    protected int minThread = 1;
 
     /**
      * Maximum number of threads to run.
@@ -93,7 +93,7 @@ public class PerfTestRunner {
         for (int threadCount = minThread; threadCount <= maxThread && !stop; threadCount += threadIncrement) {
 
             while (clientThreads.size() < threadCount) {
-                PerfTest test = null;
+                PerfTest test;
                 try {
                     test = createTestInstance(testFactory);
                 } catch (Throwable e) {
@@ -115,12 +115,21 @@ public class PerfTestRunner {
             counter.reset();
 
             logger.debug("Sleeping for {} ms", testPeriod);
+
+            /*
             long sleepStart = System.currentTimeMillis();
             while (!stop && (System.currentTimeMillis() - sleepStart) < testPeriod) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
                 }
+            }
+            */
+            try {
+                Thread.sleep(testPeriod);
+            } catch (InterruptedException e) {
+                logger.warn("Tests interrupted", e);
+                break;
             }
 
             // get the iteration count just before we stop the timer
@@ -131,10 +140,10 @@ public class PerfTestRunner {
             final long testPeriodMeasured = t2 - t1;
             final float tps = iterations * 1000.0f / testPeriodMeasured;
 
-            // show a warning if the test period was more than 1ms out
-            final float testPeriodVariance = (testPeriodMeasured - testPeriod) / testPeriod;
+            // show a warning if the test period was more than 5% out
+            final float testPeriodVariance = (testPeriodMeasured - testPeriod) / (1.0f * testPeriod);
             if (testPeriodVariance < -0.05 || testPeriodVariance > 0.05) {
-                logger.info("Test period configured as " + testPeriod + " but was actually " + testPeriodMeasured);
+                logger.warn("Test period configured as {} but was actually {}", testPeriod, testPeriodMeasured);
             }
 
             Runtime rt = Runtime.getRuntime();
@@ -158,11 +167,13 @@ public class PerfTestRunner {
             }
             avgIterationTime /= (1.0f * clientThreads.size());
 
-            logger.info("" + strThreadCount + " test threads: "
-                    + fmt.format(tps) + " iterations/sec; " +
-                    "avg iteration time: " + fmt.format(avgIterationTime) + " ms ; "
-                    + fmt.format((result.getMemTotal() - result.getMemFree()) / 1024.0f) + " KB mem used; "
-                    + result.getActiveThreadCount() + " active threads."
+            logger.info(
+                    "{} test threads: {} calls/sec; avg call: {} ms; {} KB mem used; {} active threads.",
+                    strThreadCount,
+                    fmt.format(tps),
+                    fmt.format(avgIterationTime),
+                    fmt.format((result.getMemTotal() - result.getMemFree()) / 1024.0f),
+                    result.getActiveThreadCount()
             );
         }
 
