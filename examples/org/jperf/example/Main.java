@@ -11,12 +11,14 @@ import org.jperf.PerfTestRunner;
 public class Main {
 
     public static void main(String[] args) throws Exception {
+        doTest(NoOpTest.class);
         doTest(NewDateFormatTest.class);
         doTest(SynchronizedDateFormatTest.class);
         doTest(ThreadLocalDateFormatTest.class);
     }
 
     private static void doTest(final Class theClass) throws Exception {
+	System.out.println("Testing " + theClass + " ...");
         PerfTestRunner r = new PerfTestRunner();
         r.setMinThread(1);
         r.setMaxThread(10);
