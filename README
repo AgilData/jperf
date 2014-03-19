@@ -8,6 +8,43 @@ Simply run 'ant' to compile the framework and run the examples (requires Apache 
 
 JPerf can be used programatically or as a command-line tool with a configuration file.
 
+To use JPerf programatically, create a class that implements the PerfTest interface:
+
+public class MyPerfTest implements PerfTest {
+
+  public void setUp() {
+    // do once per-thread setup here
+  }
+
+  public void test() {
+    // do the operation here that you want to test 
+  }
+
+  public void tearDown() {
+    // do once per-thread teardown here
+  }
+}
+
+Then to run the test, write a main() method to run the test:
+
+public static void main(String arg[]) throws Exception {
+
+	PerfTestRunner r = new PerfTestRunner();
+        r.setMinThread(1);
+        r.setMaxThread(10);
+        r.setTestPeriod(500);
+        r.run(new PerfTestFactory() {
+            @Override
+            public PerfTest createPerfTest() throws Exception {
+                return new MyPerfTest();
+            }
+        });
+
+}
+
+JPerf ships with some standard performance tests for Web and JDBC that can be driven from the command-line
+with XML configuration files.
+
 JDBC Example config:
 
 <jperf class="org.jperf.jdbc.JdbcPerfTestFactory"
