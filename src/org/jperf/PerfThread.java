@@ -54,15 +54,20 @@ public class PerfThread extends Thread {
         try {
             startTime = System.currentTimeMillis();
 
-//            long t = System.currentTimeMillis();
+            long t = System.currentTimeMillis();
+            long localCounter = 0;
+
             while (!stopRequested() && !runner.stop) {
                 try {
                     test.test();
+                    localCounter++;
 
-//                    long now = System.currentTimeMillis();
-//                    if (now-t > 10) {
-                        counter.incrementAndGet();
-//                    }
+                    final long now = System.currentTimeMillis();
+                    if (now-t > 10) {
+                        counter.addAndGet(localCounter);
+                        localCounter = 0;
+                        t = now;
+                    }
 
                     iterations++;
                 }
