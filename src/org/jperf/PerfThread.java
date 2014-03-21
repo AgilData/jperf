@@ -4,6 +4,8 @@ import org.jperf.util.Counter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Thread that repeatedly invokes the PerfTest in a tight loop and updates the shared counter after each 
  * invocation.
@@ -23,7 +25,7 @@ public class PerfThread extends Thread {
     /**
      * Reference to shared counter.
      */
-    protected Counter counter;
+    protected AtomicLong counter;
     
     protected boolean stopOnError;
 
@@ -41,7 +43,7 @@ public class PerfThread extends Thread {
      */
     protected volatile long iterations;
 
-    public PerfThread(PerfTestRunner runner, PerfTest test, Counter counter, boolean stopOnError) {
+    public PerfThread(PerfTestRunner runner, PerfTest test, AtomicLong counter, boolean stopOnError) {
         this.runner = runner;
         this.test = test;
         this.counter = counter;
@@ -51,10 +53,17 @@ public class PerfThread extends Thread {
     public void run() {
         try {
             startTime = System.currentTimeMillis();
+
+//            long t = System.currentTimeMillis();
             while (!stopRequested() && !runner.stop) {
                 try {
                     test.test();
-                    counter.next();
+
+//                    long now = System.currentTimeMillis();
+//                    if (now-t > 10) {
+                        counter.incrementAndGet();
+//                    }
+
                     iterations++;
                 }
                 catch (Throwable th) {

@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The JPerf test runner launches one or more threads to run instances of PerfTest and
@@ -29,7 +30,7 @@ public class PerfTestRunner {
     /**
      * Counter for measuring throughput.
      */
-    protected final Counter counter = new Counter();
+    protected final AtomicLong counter = new AtomicLong();
 
     /**
      * Minimum number of threads to run.
@@ -112,7 +113,7 @@ public class PerfTestRunner {
 
             // reset the counter again to ensure we don't measure iterations
             // that already happened before we started the timer
-            counter.reset();
+            counter.set(0);
 
             logger.debug("Sleeping for {} ms", testPeriod);
 
@@ -133,7 +134,7 @@ public class PerfTestRunner {
             }
 
             // get the iteration count just before we stop the timer
-            final long iterations = counter.reset();
+            final long iterations = counter.getAndSet(0);
             final long t2 = System.currentTimeMillis();
 
             // calculations
