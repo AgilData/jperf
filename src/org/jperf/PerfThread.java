@@ -1,6 +1,5 @@
 package org.jperf;
 
-import org.jperf.util.Counter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,14 +28,9 @@ public class PerfThread extends Thread {
     
     protected boolean stopOnError;
 
-    /**
-     * Flag that indicates if a request has been made to terminate this test thread.
-     */
-    protected volatile boolean stopRequested;
-
     protected PerfTestRunner runner;
 
-    protected long startTime;
+    protected volatile long startTime;
 
     /**
      * Number of iterations on this thread.
@@ -57,19 +51,23 @@ public class PerfThread extends Thread {
             long t = System.currentTimeMillis();
             long localCounter = 0;
 
-            while (!stopRequested() && !runner.stop) {
+            while (true) {
                 try {
                     test.test();
                     localCounter++;
 
+                    // update shared memory only every 10 ms to reduce thread contention
                     final long now = System.currentTimeMillis();
                     if (now-t > 10) {
                         counter.addAndGet(localCounter);
+                        iterations += localCounter;
                         localCounter = 0;
                         t = now;
                     }
 
-                    iterations++;
+                }
+                catch (InterruptedException ie) {
+                    break;
                 }
                 catch (Throwable th) {
                     logger.error( "Test iteration threw an exception", th );
@@ -88,16 +86,6 @@ public class PerfThread extends Thread {
                 logger.error( "Test tearDown threw an exception", e );
             }
         }
-    }
-
-    public synchronized void requestStop() {
-        stopRequested = true;
-        logger.debug("Interrupting thread {}", this.getName());
-        this.interrupt();
-    }
-
-    public synchronized boolean stopRequested() {
-        return stopRequested;
     }
 
     public float getAverageIterationTime() {

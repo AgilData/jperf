@@ -1,6 +1,5 @@
 package org.jperf;
 
-import org.jperf.util.Counter;
 import org.jperf.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -209,7 +208,7 @@ public class PerfTestRunner {
         // ask threads to finish
         logger.info("Instructing threads to stop");
         for (PerfThread clientThread : clientThreads) {
-            clientThread.requestStop();
+            clientThread.interrupt();
         }
 
         // wait for all threads to stop (with a 5 second max wait right now - should be configurable really)
