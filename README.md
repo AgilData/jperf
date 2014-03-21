@@ -96,5 +96,4 @@ JPerf includes binaries from the following open source projects:
 - JDOM
 - SLF4J
 
-
-Copyright (C) 2007-2012 Andy Grove.
+Copyright (C) 2007-2014 Andy Grove.
