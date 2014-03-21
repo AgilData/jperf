@@ -5,8 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -258,49 +256,6 @@ public class PerfTestRunner {
         logger.debug("Verifying test");
         test.test();
         logger.debug("Verified test OK");
-        return test;
-    }
-
-    private PerfTest createTest(Class testClass, Object[] param) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        PerfTest test = null;
-        if (param == null || param.length == 0) {
-            Constructor noArgCtor = testClass.getConstructor();
-            if (noArgCtor == null) {
-                throw new IllegalArgumentException(
-                        "Test class '" +
-                                testClass.getName() +
-                                "' does not have a no-arg public constructor " +
-                                "and no arguments were supplied"
-                );
-            }
-            test = (PerfTest) noArgCtor.newInstance();
-        } else {
-            for (Constructor c : testClass.getConstructors()) {
-                final Class paramTypes[] = c.getParameterTypes();
-                if (paramTypes.length == param.length) {
-                    boolean isSuitable = true;
-                    for (int i = 0; i < paramTypes.length; i++) {
-                        if (!paramTypes[i].isAssignableFrom(param[i].getClass())) {
-                            logger.debug(paramTypes[i].getClass() + " is not assignable from " + param[i].getClass());
-                            isSuitable = false;
-                            break;
-                        }
-                    }
-                    if (isSuitable) {
-                        test = (PerfTest) c.newInstance(param);
-                        break;
-                    }
-                }
-            }
-            if (test == null) {
-                throw new IllegalArgumentException(
-                        "Test class '" +
-                                testClass.getName() +
-                                "' does not have a suitable public constructor " +
-                                "for the supplied arguments"
-                );
-            }
-        }
         return test;
     }
 

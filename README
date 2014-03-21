@@ -1,4 +1,4 @@
-JPerf is a simple performance and scalability testing framework for Java.
+JPerf is a simple performance and scalability testing framework for Java. Think of it as JUnit for performance tests.
 
 JPerf is distributed under the Apache License 2.0 (see LICENSE.txt).
 
@@ -42,8 +42,12 @@ public static void main(String arg[]) throws Exception {
 
 }
 
-JPerf ships with some standard performance tests for Web and JDBC that can be driven from the command-line
-with XML configuration files.
+PerfTestRunner will start with a single thread and then add more threads after running for testPeriod ms. Each
+thread has a dedicated instance of the PerfTest class being tested and will call setUp() once and will then call
+test() in a tight loop. At the end of the test, tearDown() will be called once.
+
+As an alternative to writing programmatic tests, JPerf ships with some standard performance tests for Web and JDBC
+that can be driven from the command-line with XML configuration files.
 
 JDBC Example config:
 
