@@ -28,6 +28,15 @@
         </fileset>
     </path>
 
+    <target name="clean">
+        <delete dir="_classes" />
+        <delete dir="dist" />
+        <delete>
+            <fileset dir="." includes="JPerf*.csv"/>
+            <fileset dir="." includes="JPerf*.xml"/>
+        </delete>
+    </target>
+
     <target name="build">
 
         <delete dir="_classes" />
