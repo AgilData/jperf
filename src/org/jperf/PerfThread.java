@@ -28,8 +28,6 @@ public class PerfThread extends Thread {
     
     protected boolean stopOnError;
 
-    protected PerfTestRunner runner;
-
     protected volatile long startTime;
 
     /**
@@ -37,8 +35,9 @@ public class PerfThread extends Thread {
      */
     protected volatile long iterations;
 
-    public PerfThread(PerfTestRunner runner, PerfTest test, AtomicLong counter, boolean stopOnError) {
-        this.runner = runner;
+    protected volatile boolean active = true;
+
+    public PerfThread(PerfTest test, AtomicLong counter, boolean stopOnError) {
         this.test = test;
         this.counter = counter;
         this.stopOnError = stopOnError;
@@ -56,18 +55,19 @@ public class PerfThread extends Thread {
                     test.test();
                     localCounter++;
 
-                    // update shared memory only every 10 ms to reduce thread contention
+                    // access shared memory only every 10 ms to reduce thread contention
                     final long now = System.currentTimeMillis();
                     if (now-t > 10) {
                         counter.addAndGet(localCounter);
                         iterations += localCounter;
                         localCounter = 0;
                         t = now;
+                        if (!active) {
+                            logger.debug("Thread interrupted");
+                            break;
+                        }
                     }
 
-                }
-                catch (InterruptedException ie) {
-                    break;
                 }
                 catch (Throwable th) {
                     logger.error( "Test iteration threw an exception", th );
@@ -86,6 +86,10 @@ public class PerfThread extends Thread {
                 logger.error( "Test tearDown threw an exception", e );
             }
         }
+    }
+
+    public void requestStop() {
+        active = false;
     }
 
     public float getAverageIterationTime() {

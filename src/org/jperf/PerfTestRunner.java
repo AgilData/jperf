@@ -68,8 +68,6 @@ public class PerfTestRunner {
 
     protected List<PerfThread> clientThreads = new ArrayList<PerfThread>();
 
-    public volatile boolean stop;
-
     long testCreateTime = -1;
 
     long testSetupTime = -1;
@@ -90,7 +88,7 @@ public class PerfTestRunner {
 
         results = new ArrayList<PerfResult>();
 
-        for (int threadCount = minThread; threadCount <= maxThread && !stop; threadCount += threadIncrement) {
+        for (int threadCount = minThread; threadCount <= maxThread; threadCount += threadIncrement) {
 
             while (clientThreads.size() < threadCount) {
                 PerfTest test;
@@ -103,7 +101,7 @@ public class PerfTestRunner {
 
                 logger.debug("Starting thread to run tests");
 
-                PerfThread perfThread = new PerfThread(this, test, counter, stopThreadOnError);
+                PerfThread perfThread = new PerfThread(test, counter, stopThreadOnError);
                 clientThreads.add(perfThread);
                 perfThread.start();
             }
@@ -203,12 +201,10 @@ public class PerfTestRunner {
 
         logger.info("Stopping tests");
 
-        stop = true;
-
         // ask threads to finish
         logger.info("Instructing threads to stop");
         for (PerfThread clientThread : clientThreads) {
-            clientThread.interrupt();
+            clientThread.requestStop();
         }
 
         // wait for all threads to stop (with a 5 second max wait right now - should be configurable really)
