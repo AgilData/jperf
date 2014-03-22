@@ -29,9 +29,9 @@ To use JPerf programatically, create a class that implements the PerfTest interf
 
 Then to run the test, write a main() method to run the test:
 
-public static void main(String arg[]) throws Exception {
+    public static void main(String arg[]) throws Exception {
 
-	PerfTestRunner r = new PerfTestRunner();
+    	PerfTestRunner r = new PerfTestRunner();
         r.setMinThread(1);
         r.setMaxThread(10);
         r.setTestPeriod(500);
@@ -41,6 +41,7 @@ public static void main(String arg[]) throws Exception {
                 return new MyPerfTest();
             }
         });
+        
     }
 
 PerfTestRunner will start with a single thread and then add more threads after running for testPeriod ms. Each
