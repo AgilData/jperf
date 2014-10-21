@@ -6,28 +6,27 @@ import org.jperf.PerfTestRunner;
 
 /**
  * Runs the examples.
- *
  */
 public class Main {
 
-    public static void main(String[] args) throws Exception {
-        doTest(NoOpTest.class);
-        doTest(NewDateFormatTest.class);
-        doTest(SynchronizedDateFormatTest.class);
-        doTest(ThreadLocalDateFormatTest.class);
-    }
+  public static void main(String[] args) throws Exception {
+    doTest(NoOpTest.class);
+    doTest(NewDateFormatTest.class);
+    doTest(SynchronizedDateFormatTest.class);
+    doTest(ThreadLocalDateFormatTest.class);
+  }
 
-    private static void doTest(final Class theClass) throws Exception {
-	System.out.println("Testing " + theClass + " ...");
-        PerfTestRunner r = new PerfTestRunner();
-        r.setMinThread(1);
-        r.setMaxThread(10);
-        r.setTestPeriod(500);
-        r.run(new PerfTestFactory() {
-            @Override
-            public PerfTest createPerfTest() throws Exception {
-                return (PerfTest) theClass.newInstance();
-            }
-        });
-    }
+  private static void doTest(final Class theClass) throws Exception {
+    System.out.println("Testing " + theClass + " ...");
+    PerfTestRunner r = new PerfTestRunner();
+    r.setMinThread(1);
+    r.setMaxThread(10);
+    r.setTestPeriod(500);
+    r.run(new PerfTestFactory() {
+      @Override
+      public PerfTest createPerfTest() throws Exception {
+        return (PerfTest) theClass.newInstance();
+      }
+    });
+  }
 }

@@ -9,14 +9,14 @@ import org.jperf.PerfTestFactory;
  */
 public class WebPerfTestFactory implements PerfTestFactory {
 
-    private String url;
+  private String url;
 
-    public WebPerfTestFactory(String url) {
-        this.url = url;
-    }
+  public WebPerfTestFactory(String url) {
+    this.url = url;
+  }
 
-    @Override
-    public PerfTest createPerfTest() throws Exception {
-        return new WebPerfTest(url);
-    }
+  @Override
+  public PerfTest createPerfTest() throws Exception {
+    return new WebPerfTest(url);
+  }
 }

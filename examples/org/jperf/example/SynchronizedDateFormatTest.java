@@ -14,23 +14,23 @@ import java.util.Date;
  */
 public class SynchronizedDateFormatTest implements PerfTest {
 
-    protected static final SimpleDateFormat df = new SimpleDateFormat( "dd-MMM-yyyy" );
+  protected static final SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
 
-    protected Date date = new Date();
+  protected Date date = new Date();
 
-    public void setUp() throws Exception {
-        // no set up needed in this test
+  public void setUp() throws Exception {
+    // no set up needed in this test
+  }
+
+  public void test() throws Exception {
+    // SimpleDateFormat is not thread-safe so we need to synchronize access
+    synchronized (df) {
+      df.format(date);
     }
+  }
 
-    public void test() throws Exception {
-        // SimpleDateFormat is not thread-safe so we need to synchronize access
-        synchronized (df) {
-            df.format( date );
-        }
-    }
-
-    public void tearDown() throws Exception {
-        // no tear down needed in this test
-    }
+  public void tearDown() throws Exception {
+    // no tear down needed in this test
+  }
 
 }

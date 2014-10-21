@@ -19,98 +19,94 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class PerfTestRunner {
 
-    /**
-     * Logger.
-     */
-    protected static final Logger logger = LoggerFactory.getLogger(PerfTestRunner.class);
+  /**
+   * Logger.
+   */
+  protected static final Logger logger = LoggerFactory.getLogger(PerfTestRunner.class);
 
-    /**
-     * Counter for measuring throughput.
-     */
-    protected final AtomicLong counter = new AtomicLong();
+  /**
+   * Counter for measuring throughput.
+   */
+  protected final AtomicLong counter = new AtomicLong();
 
-    /**
-     * Minimum number of threads to run.
-     */
-    protected int minThread = 1;
+  /**
+   * Minimum number of threads to run.
+   */
+  protected int minThread = 1;
 
-    /**
-     * Maximum number of threads to run.
-     */
-    protected int maxThread = 10;
+  /**
+   * Maximum number of threads to run.
+   */
+  protected int maxThread = 10;
 
-    /**
-     * Number of threads to increase clients by for each test period.
-     */
-    protected int threadIncrement = 1;
+  /**
+   * Number of threads to increase clients by for each test period.
+   */
+  protected int threadIncrement = 1;
 
-    /**
-     * Duration to run tests for at each thread count.
-     */
-    protected int testPeriod = 500;
+  /**
+   * Duration to run tests for at each thread count.
+   */
+  protected int testPeriod = 500;
 
-    /**
-     * Optional file to output results to.
-     */
-    protected String resultFilename;
+  /**
+   * Optional file to output results to.
+   */
+  protected String resultFilename;
 
-    /**
-     * Specify if test thread should terminate after an exception.
-     */
-    protected boolean stopThreadOnError = true;
+  /**
+   * Specify if test thread should terminate after an exception.
+   */
+  protected boolean stopThreadOnError = true;
 
-    /**
-     * Temporary storage for throughput results.
-     */
-    protected List<PerfResult> results;
+  /**
+   * Temporary storage for throughput results.
+   */
+  protected List<PerfResult> results;
 
-    protected List<PerfThread> clientThreads = new ArrayList<PerfThread>();
+  protected List<PerfThread> clientThreads = new ArrayList<PerfThread>();
 
-    long testCreateTime = -1;
+  public PerfTestRunner() {
+    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+      public void run() {
+        stop();
+      }
+    }));
+  }
 
-    long testSetupTime = -1;
+  public List<PerfResult> run(final PerfTestFactory testFactory) throws IOException {
 
-    public PerfTestRunner() {
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            public void run() {
-                stop();
-            }
-        }));
-    }
+    logger.info("JPerf is testing " + testFactory.getClass());
 
-    public List<PerfResult> run(final PerfTestFactory testFactory) throws IOException {
+    DecimalFormat fmt = new DecimalFormat("#,##0");
 
-        logger.info("JPerf is testing " + testFactory.getClass());
+    results = new ArrayList<PerfResult>();
 
-        DecimalFormat fmt = new DecimalFormat("#,##0");
+    for (int threadCount = minThread; threadCount <= maxThread; threadCount += threadIncrement) {
 
-        results = new ArrayList<PerfResult>();
+      while (clientThreads.size() < threadCount) {
+        PerfTest test;
+        try {
+          test = testFactory.createPerfTest();
+        } catch (Throwable e) {
+          logger.error("Failed to create test", e);
+          break;
+        }
 
-        for (int threadCount = minThread; threadCount <= maxThread; threadCount += threadIncrement) {
+        logger.debug("Starting thread to run tests");
 
-            while (clientThreads.size() < threadCount) {
-                PerfTest test;
-                try {
-                    test = createTestInstance(testFactory);
-                } catch (Throwable e) {
-                    logger.error("Failed to create test", e);
-                    break;
-                }
+        PerfThread perfThread = new PerfThread(test, counter, stopThreadOnError);
+        clientThreads.add(perfThread);
+        perfThread.start();
+      }
 
-                logger.debug("Starting thread to run tests");
+      final long t1 = System.currentTimeMillis();
 
-                PerfThread perfThread = new PerfThread(test, counter, stopThreadOnError);
-                clientThreads.add(perfThread);
-                perfThread.start();
-            }
+      // reset the counter again to ensure we don't measure iterations
+      // that already happened before we started the timer
+      counter.set(0);
 
-            final long t1 = System.currentTimeMillis();
-
-            // reset the counter again to ensure we don't measure iterations
-            // that already happened before we started the timer
-            counter.set(0);
-
-            logger.debug("Sleeping for {} ms", testPeriod);
+      logger.debug("Sleeping for {} ms", testPeriod);
 
             /*
             long sleepStart = System.currentTimeMillis();
@@ -121,311 +117,283 @@ public class PerfTestRunner {
                 }
             }
             */
-            try {
-                Thread.sleep(testPeriod);
-            } catch (InterruptedException e) {
-                logger.warn("Tests interrupted", e);
-                break;
-            }
+      try {
+        Thread.sleep(testPeriod);
+      } catch (InterruptedException e) {
+        logger.warn("Tests interrupted", e);
+        break;
+      }
 
-            // get the iteration count just before we stop the timer
-            final long iterations = counter.getAndSet(0);
-            final long t2 = System.currentTimeMillis();
+      // get the iteration count just before we stop the timer
+      final long iterations = counter.getAndSet(0);
+      final long t2 = System.currentTimeMillis();
 
-            // calculations
-            final long testPeriodMeasured = t2 - t1;
-            final float tps = iterations * 1000.0f / testPeriodMeasured;
+      // calculations
+      final long testPeriodMeasured = t2 - t1;
+      final float tps = iterations * 1000.0f / testPeriodMeasured;
 
-            // show a warning if the test period was more than 5% out
-            final float testPeriodVariance = (testPeriodMeasured - testPeriod) / (1.0f * testPeriod);
-            if (testPeriodVariance < -0.05 || testPeriodVariance > 0.05) {
-                logger.warn("Test period configured as {} but was actually {}", testPeriod, testPeriodMeasured);
-            }
+      // show a warning if the test period was more than 5% out
+      final float testPeriodVariance = (testPeriodMeasured - testPeriod) / (1.0f * testPeriod);
+      if (testPeriodVariance < -0.05 || testPeriodVariance > 0.05) {
+        logger.warn("Test period configured as {} but was actually {}", testPeriod, testPeriodMeasured);
+      }
 
-            Runtime rt = Runtime.getRuntime();
+      Runtime rt = Runtime.getRuntime();
 
-            final PerfResult result = new PerfResult(threadCount, iterations, testPeriodMeasured, tps,
-                    rt.freeMemory(), rt.maxMemory(), rt.totalMemory(), Thread.activeCount());
+      final PerfResult result = new PerfResult(threadCount, iterations, testPeriodMeasured, tps,
+          rt.freeMemory(), rt.maxMemory(), rt.totalMemory(), Thread.activeCount());
 
-            result.setTestCreate(testCreateTime);
-            result.setTestSetup(testSetupTime);
-            results.add(result);
+      results.add(result);
 
-            String strThreadCount = fmt.format(threadCount);
-            while (strThreadCount.length() < 4) {
-                strThreadCount = " " + strThreadCount;
-            }
+      String strThreadCount = fmt.format(threadCount);
+      while (strThreadCount.length() < 4) {
+        strThreadCount = " " + strThreadCount;
+      }
 
-            // calculate average transaction time
-            float avgIterationTime = 0;
-            for (PerfThread thread : clientThreads) {
-                avgIterationTime += thread.getAverageIterationTime();
-            }
-            avgIterationTime /= (1.0f * clientThreads.size());
+      // calculate average transaction time
+      float avgIterationTime = 0;
+      for (PerfThread thread : clientThreads) {
+        avgIterationTime += thread.getAverageIterationTime();
+      }
+      avgIterationTime /= (1.0f * clientThreads.size());
 
-            logger.info(
-                    "{} test threads: {} calls/sec; avg call: {} ms; {} KB mem used; {} active threads.",
-                    strThreadCount,
-                    fmt.format(tps),
-                    fmt.format(avgIterationTime),
-                    fmt.format((result.getMemTotal() - result.getMemFree()) / 1024.0f),
-                    result.getActiveThreadCount()
-            );
+      logger.info(
+          "{} test threads: {} calls/sec; avg call: {} ms; {} KB mem used; {} active threads.",
+          strThreadCount,
+          fmt.format(tps),
+          fmt.format(avgIterationTime),
+          fmt.format((result.getMemTotal() - result.getMemFree()) / 1024.0f),
+          result.getActiveThreadCount()
+      );
+    }
+
+    stop();
+
+    if (resultFilename == null) {
+      resultFilename = "JPerf-" + testFactory.getClass().getName();
+    }
+
+    File resultFile = new File(resultFilename + ".xml");
+    logger.info("Writing results to " + resultFile.getAbsolutePath());
+    FileOutputStream os = new FileOutputStream(resultFile);
+    writeXmlResults(os, testFactory.getClass().getName());
+    os.close();
+
+    resultFile = new File(resultFilename + ".csv");
+    logger.info("Writing results to " + resultFile.getAbsolutePath());
+    os = new FileOutputStream(resultFile);
+    writeCsvResults(os);
+    os.close();
+
+    return results;
+
+  }
+
+  public void stop() {
+
+    logger.info("Stopping tests");
+
+    // ask threads to finish
+    logger.info("Instructing threads to stop");
+    for (PerfThread clientThread : clientThreads) {
+      clientThread.requestStop();
+    }
+
+    // wait for all threads to stop (with a 5 second max wait right now - should be configurable really)
+    int aliveCount = maxThread;
+    long startWait = System.currentTimeMillis();
+    while (aliveCount > 0) {
+      aliveCount = 0;
+
+      if ((System.currentTimeMillis() - startWait) > 5000) {
+        logger.info("Timed out waiting for threads to stop");
+        break;
+      }
+
+      for (PerfThread clientThread : clientThreads) {
+        if (clientThread.isAlive()) {
+          aliveCount++;
         }
-
-        stop();
-
-        if (resultFilename == null) {
-            resultFilename = "JPerf-" + testFactory.getClass().getName();
+      }
+      if (aliveCount > 0) {
+        logger.info("Waiting for {} threads to stop", aliveCount);
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          //e.printStackTrace();
         }
-
-        File resultFile = new File(resultFilename + ".xml");
-        logger.info("Writing results to " + resultFile.getAbsolutePath());
-        FileOutputStream os = new FileOutputStream(resultFile);
-        writeXmlResults(os, testFactory.getClass().getName());
-        os.close();
-
-        resultFile = new File(resultFilename + ".csv");
-        logger.info("Writing results to " + resultFile.getAbsolutePath());
-        os = new FileOutputStream(resultFile);
-        writeCsvResults(os);
-        os.close();
-
-        return results;
-
+      }
     }
 
-    public void stop() {
+  }
 
-        logger.info("Stopping tests");
+  private void writeXmlResults(OutputStream os, String testClassName) throws IOException {
+    PrintWriter w = new PrintWriter(os);
 
-        // ask threads to finish
-        logger.info("Instructing threads to stop");
-        for (PerfThread clientThread : clientThreads) {
-            clientThread.requestStop();
+    DateFormat df = DateFormat.getDateTimeInstance();
+
+    final InetAddress host = InetAddress.getLocalHost();
+
+    StringBuffer root = new StringBuffer();
+    root.append("<jperf ");
+    root.append("testClass=\"").append(testClassName).append("\" ");
+    root.append("timestamp=\"").append(df.format(new Date())).append("\" ");
+    root.append("hostName=\"").append(host.getHostName()).append("\" ");
+    root.append("hostAddress=\"").append(host.getHostAddress()).append("\" ");
+    root.append(">");
+    w.println(root);
+
+    w.println("<environment>");
+    List keys = new ArrayList();
+    final Properties properties = System.getProperties();
+    keys.addAll(properties.keySet());
+    Collections.sort(keys);
+    for (Object key : keys) {
+      w.println("<property key=\"" + sanitize(key) + "\" value=\"" + sanitize(properties.get(key)) + "\" />");
+    }
+    w.println("</environment>");
+    w.println("<results>");
+    for (int i = 0; i < results.size(); i++) {
+      PerfResult r = results.get(i);
+      StringBuffer buf = new StringBuffer();
+      buf.append("<results threadCount=\"").append(r.getTestThreadCount());
+      buf.append("\" iterations=\"").append(r.getIterations());
+      buf.append("\" time=\"").append(r.getTime());
+      buf.append("\" throughput=\"").append(r.getThroughput());
+      buf.append("\" testCreateTime=\"").append(r.getTestCreate());
+      buf.append("\" testSetupTime=\"").append(r.getTestSetup());
+      buf.append("\" maxMemory=\"").append(r.getMemMax());
+      buf.append("\" totalMemory=\"").append(r.getMemTotal());
+      buf.append("\" freeMemory=\"").append(r.getMemFree());
+      buf.append("\" usedMemory=\"").append(r.getMemTotal() - r.getMemFree());
+      buf.append("\" />");
+      w.println(buf.toString());
+    }
+    w.println("</results>");
+    w.println("</jperf>");
+    w.close();
+  }
+
+  private void writeCsvResults(OutputStream os) throws IOException {
+    PrintWriter w = new PrintWriter(os);
+
+    StringBuffer buf = new StringBuffer();
+    buf.append("threadCount");
+    buf.append(", iterations");
+    buf.append(", time");
+    buf.append(", throughput");
+    buf.append(", testCreateTime");
+    buf.append(", testSetupTime");
+    buf.append(", maxMemory");
+    buf.append(", totalMemory");
+    buf.append(", freeMemory");
+    buf.append(", usedMemory");
+    w.println(buf.toString());
+    for (int i = 0; i < results.size(); i++) {
+      PerfResult r = results.get(i);
+      buf.setLength(0);
+      buf.append(r.getTestThreadCount());
+      buf.append(",").append(r.getIterations());
+      buf.append(",").append(r.getTime());
+      buf.append(",").append(r.getThroughput());
+      buf.append(",").append(r.getTestCreate());
+      buf.append(",").append(r.getTestSetup());
+      buf.append(",").append(r.getMemMax());
+      buf.append(",").append(r.getMemTotal());
+      buf.append(",").append(r.getMemFree());
+      buf.append(",").append(r.getMemTotal() - r.getMemFree());
+      w.println(buf.toString());
+    }
+    w.close();
+  }
+
+  private String sanitize(Object _str) {
+    if (_str == null) {
+      return "";
+    }
+    String str;
+    if (_str instanceof String) {
+      str = (String) _str;
+    } else {
+      str = _str.toString();
+    }
+    StringBuilder ret = new StringBuilder();
+    for (int i = 0; i < str.length(); i++) {
+      char ch = str.charAt(i);
+      if (Character.isLetter(ch)
+          || Character.isDigit(ch)
+          || Character.isWhitespace(ch)
+          || "-=_+!$%�^&*(),.;:'@#~/?[]{}`\\|".indexOf(ch) >= 0) {
+        ret.append(ch);
+      } else {
+        switch (ch) {
+          case '\'':
+            ret.append("&apos;");
+            break;
+          case '\"':
+            ret.append("&quot;");
+            break;
+          case '<':
+            ret.append("&lt;");
+            break;
+          case '>':
+            ret.append("&gt;");
+            break;
+          default:
+            ret.append('?');
+            break;
         }
-
-        // wait for all threads to stop (with a 5 second max wait right now - should be configurable really)
-        int aliveCount = maxThread;
-        long startWait = System.currentTimeMillis();
-        while (aliveCount > 0) {
-            aliveCount = 0;
-
-            if ((System.currentTimeMillis() - startWait) > 5000) {
-                logger.info("Timed out waiting for threads to stop");
-                break;
-            }
-
-            for (PerfThread clientThread : clientThreads) {
-                if (clientThread.isAlive()) {
-                    aliveCount++;
-                }
-            }
-            if (aliveCount > 0) {
-                logger.info("Waiting for {} threads to stop", aliveCount);
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    //e.printStackTrace();
-                }
-            }
-        }
-
+      }
     }
+    return ret.toString();
+  }
 
-    private PerfTest createTestInstance(PerfTestFactory factory) throws Exception {
+  public int getTestPeriod() {
+    return testPeriod;
+  }
 
-        Timer timer = new Timer();
-        timer.start();
-        PerfTest test = factory.createPerfTest();
-        timer.stop();
-        testCreateTime = timer.value();
+  public void setTestPeriod(int testPeriod) {
+    this.testPeriod = testPeriod;
+  }
 
-        // setup the test
-        logger.debug("Calling setUp");
+  public int getMaxThread() {
+    return maxThread;
+  }
 
-        timer.reset();
-        timer.start();
-        test.setUp();
-        timer.stop();
-        testSetupTime = timer.value();
+  public void setMaxThread(int maxThread) {
+    this.maxThread = maxThread;
+  }
 
-        logger.debug("Called setUp OK");
+  public int getMinThread() {
+    return minThread;
+  }
 
-        // run the test once to make sure the test is working
-        logger.debug("Verifying test");
-        test.test();
-        logger.debug("Verified test OK");
-        return test;
-    }
+  public void setMinThread(int minThread) {
+    this.minThread = minThread;
+  }
 
-    private void writeXmlResults(OutputStream os, String testClassName) throws IOException {
-        PrintWriter w = new PrintWriter(os);
+  public int getThreadIncrement() {
+    return threadIncrement;
+  }
 
-        DateFormat df = DateFormat.getDateTimeInstance();
+  public void setThreadIncrement(int threadIncrement) {
+    this.threadIncrement = threadIncrement;
+  }
 
-        final InetAddress host = InetAddress.getLocalHost();
+  public boolean isStopThreadOnError() {
+    return stopThreadOnError;
+  }
 
-        StringBuffer root = new StringBuffer();
-        root.append("<jperf ");
-        root.append("testClass=\"").append(testClassName).append("\" ");
-        root.append("timestamp=\"").append(df.format(new Date())).append("\" ");
-        root.append("hostName=\"").append(host.getHostName()).append("\" ");
-        root.append("hostAddress=\"").append(host.getHostAddress()).append("\" ");
-        root.append(">");
-        w.println(root);
+  public void setStopThreadOnError(boolean stopThreadOnError) {
+    this.stopThreadOnError = stopThreadOnError;
+  }
 
-        w.println("<environment>");
-        List keys = new ArrayList();
-        final Properties properties = System.getProperties();
-        keys.addAll(properties.keySet());
-        Collections.sort(keys);
-        for (Object key : keys) {
-            w.println("<property key=\"" + sanitize(key) + "\" value=\"" + sanitize(properties.get(key)) + "\" />");
-        }
-        w.println("</environment>");
-        w.println("<results>");
-        for (int i = 0; i < results.size(); i++) {
-            PerfResult r = results.get(i);
-            StringBuffer buf = new StringBuffer();
-            buf.append("<results threadCount=\"").append(r.getTestThreadCount());
-            buf.append("\" iterations=\"").append(r.getIterations());
-            buf.append("\" time=\"").append(r.getTime());
-            buf.append("\" throughput=\"").append(r.getThroughput());
-            buf.append("\" testCreateTime=\"").append(r.getTestCreate());
-            buf.append("\" testSetupTime=\"").append(r.getTestSetup());
-            buf.append("\" maxMemory=\"").append(r.getMemMax());
-            buf.append("\" totalMemory=\"").append(r.getMemTotal());
-            buf.append("\" freeMemory=\"").append(r.getMemFree());
-            buf.append("\" usedMemory=\"").append(r.getMemTotal() - r.getMemFree());
-            buf.append("\" />");
-            w.println(buf.toString());
-        }
-        w.println("</results>");
-        w.println("</jperf>");
-        w.close();
-    }
+  public String getResultFilename() {
+    return resultFilename;
+  }
 
-    private void writeCsvResults(OutputStream os) throws IOException {
-        PrintWriter w = new PrintWriter(os);
-
-        StringBuffer buf = new StringBuffer();
-        buf.append("threadCount");
-        buf.append(", iterations");
-        buf.append(", time");
-        buf.append(", throughput");
-        buf.append(", testCreateTime");
-        buf.append(", testSetupTime");
-        buf.append(", maxMemory");
-        buf.append(", totalMemory");
-        buf.append(", freeMemory");
-        buf.append(", usedMemory");
-        w.println(buf.toString());
-        for (int i = 0; i < results.size(); i++) {
-            PerfResult r = results.get(i);
-            buf.setLength(0);
-            buf.append(r.getTestThreadCount());
-            buf.append(",").append(r.getIterations());
-            buf.append(",").append(r.getTime());
-            buf.append(",").append(r.getThroughput());
-            buf.append(",").append(r.getTestCreate());
-            buf.append(",").append(r.getTestSetup());
-            buf.append(",").append(r.getMemMax());
-            buf.append(",").append(r.getMemTotal());
-            buf.append(",").append(r.getMemFree());
-            buf.append(",").append(r.getMemTotal() - r.getMemFree());
-            w.println(buf.toString());
-        }
-        w.close();
-    }
-
-    private String sanitize(Object _str) {
-        if (_str == null) {
-            return "";
-        }
-        String str;
-        if (_str instanceof String) {
-            str = (String) _str;
-        } else {
-            str = _str.toString();
-        }
-        StringBuilder ret = new StringBuilder();
-        for (int i = 0; i < str.length(); i++) {
-            char ch = str.charAt(i);
-            if (Character.isLetter(ch)
-                    || Character.isDigit(ch)
-                    || Character.isWhitespace(ch)
-                    || "-=_+!$%�^&*(),.;:'@#~/?[]{}`\\|".indexOf(ch) >= 0) {
-                ret.append(ch);
-            } else {
-                switch (ch) {
-                    case '\'':
-                        ret.append("&apos;");
-                        break;
-                    case '\"':
-                        ret.append("&quot;");
-                        break;
-                    case '<':
-                        ret.append("&lt;");
-                        break;
-                    case '>':
-                        ret.append("&gt;");
-                        break;
-                    default:
-                        ret.append('?');
-                        break;
-                }
-            }
-        }
-        return ret.toString();
-    }
-
-    public int getTestPeriod() {
-        return testPeriod;
-    }
-
-    public void setTestPeriod(int testPeriod) {
-        this.testPeriod = testPeriod;
-    }
-
-    public int getMaxThread() {
-        return maxThread;
-    }
-
-    public void setMaxThread(int maxThread) {
-        this.maxThread = maxThread;
-    }
-
-    public int getMinThread() {
-        return minThread;
-    }
-
-    public void setMinThread(int minThread) {
-        this.minThread = minThread;
-    }
-
-    public int getThreadIncrement() {
-        return threadIncrement;
-    }
-
-    public void setThreadIncrement(int threadIncrement) {
-        this.threadIncrement = threadIncrement;
-    }
-
-    public boolean isStopThreadOnError() {
-        return stopThreadOnError;
-    }
-
-    public void setStopThreadOnError(boolean stopThreadOnError) {
-        this.stopThreadOnError = stopThreadOnError;
-    }
-
-    public String getResultFilename() {
-        return resultFilename;
-    }
-
-    public void setResultFilename(String resultFilename) {
-        this.resultFilename = resultFilename;
-    }
+  public void setResultFilename(String resultFilename) {
+    this.resultFilename = resultFilename;
+  }
 
 }

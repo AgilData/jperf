@@ -11,38 +11,38 @@ import java.io.InputStream;
 
 public class WebPerfTest implements PerfTest {
 
-    private HttpClient httpclient;
+  private HttpClient httpclient;
 
-    private String url;
+  private String url;
 
-    public WebPerfTest(String url) {
-        this.url = url;
+  public WebPerfTest(String url) {
+    this.url = url;
+  }
+
+  @Override
+  public void setUp() throws Exception {
+    httpclient = new DefaultHttpClient();
+  }
+
+  @Override
+  public void test() throws Exception {
+    HttpGet httpget = new HttpGet(url);
+    HttpResponse response = httpclient.execute(httpget);
+    int statusCode = response.getStatusLine().getStatusCode();
+    if (200 != statusCode) {
+      throw new RuntimeException("Request failed with HTTP status code " + statusCode);
     }
-
-    @Override
-    public void setUp() throws Exception {
-        httpclient = new DefaultHttpClient();
+    HttpEntity entity = response.getEntity();
+    if (entity != null) {
+      InputStream instream = entity.getContent();
+      int l;
+      byte[] tmp = new byte[2048];
+      while ((l = instream.read(tmp)) != -1) {
+      }
     }
+  }
 
-    @Override
-    public void test() throws Exception {
-        HttpGet httpget = new HttpGet(url);
-        HttpResponse response = httpclient.execute(httpget);
-        int statusCode = response.getStatusLine().getStatusCode();
-        if (200 != statusCode) {
-            throw new RuntimeException("Request failed with HTTP status code " + statusCode);
-        }
-        HttpEntity entity = response.getEntity();
-        if (entity != null) {
-            InputStream instream = entity.getContent();
-            int l;
-            byte[] tmp = new byte[2048];
-            while ((l = instream.read(tmp)) != -1) {
-            }
-        }
-    }
-
-    @Override
-    public void tearDown() throws Exception {
-    }
+  @Override
+  public void tearDown() throws Exception {
+  }
 }

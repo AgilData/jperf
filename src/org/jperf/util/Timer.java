@@ -5,23 +5,23 @@ package org.jperf.util;
  */
 public class Timer {
 
-    long startTime;
-    long total = 0;
+  long startTime;
+  long total = 0;
 
-    public void start() {
-        startTime = System.currentTimeMillis();
-    }
+  public void start() {
+    startTime = System.currentTimeMillis();
+  }
 
-    public void stop() {
-        total += System.currentTimeMillis() - startTime;
-    }
+  public void stop() {
+    total += System.currentTimeMillis() - startTime;
+  }
 
-    public void reset() {
-        total = 0;
-    }
+  public void reset() {
+    total = 0;
+  }
 
-    public long value() {
-        return total;
-    }
+  public long value() {
+    return total;
+  }
 
 }

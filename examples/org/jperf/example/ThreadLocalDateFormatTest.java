@@ -14,27 +14,27 @@ import java.util.Date;
  */
 public class ThreadLocalDateFormatTest implements PerfTest {
 
-    /**
-     * Use ThreadLocal so that each thread gets its own instance of SimpleDateFormat.
-     */
-    protected static ThreadLocal<SimpleDateFormat> formatter = new ThreadLocal<SimpleDateFormat>() {
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("dd-MMM-yyyy");
-        }
-    };
-
-    protected Date date = new Date();
-
-    public void setUp() throws Exception {
-        // no set up needed in this test
+  /**
+   * Use ThreadLocal so that each thread gets its own instance of SimpleDateFormat.
+   */
+  protected static ThreadLocal<SimpleDateFormat> formatter = new ThreadLocal<SimpleDateFormat>() {
+    protected SimpleDateFormat initialValue() {
+      return new SimpleDateFormat("dd-MMM-yyyy");
     }
+  };
 
-    public void test() throws Exception {
-        formatter.get().format(date);
-    }
+  protected Date date = new Date();
 
-    public void tearDown() throws Exception {
-        // no tear down needed in this test
-    }
+  public void setUp() throws Exception {
+    // no set up needed in this test
+  }
+
+  public void test() throws Exception {
+    formatter.get().format(date);
+  }
+
+  public void tearDown() throws Exception {
+    // no tear down needed in this test
+  }
 
 }
