@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration strict="true" status="OFF" monitorInterval="30"  shutdownHook="disable">
+
+    <appenders>
+        <appender type="Console" name="STDOUT">
+            <layout type="PatternLayout" pattern="%d %p %C{1.} [%t] %m%n %ex"/>
+        </appender>
+    </appenders>
+
+    <loggers>
+
+        <logger name="org.jperf" level="INFO" />
+
+        <root level="info">
+            <appender-ref ref="STDOUT"/>
+        </root>
+
+    </loggers>
+
+</configuration>
