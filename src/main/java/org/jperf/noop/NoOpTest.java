@@ -11,7 +11,6 @@ public class NoOpTest implements PerfTest {
 
   @Override
   public void test() throws Exception {
-
   }
 
   @Override

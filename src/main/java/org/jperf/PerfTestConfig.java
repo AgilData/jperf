@@ -7,6 +7,7 @@ public class PerfTestConfig {
   protected int maxThreads = 10;
   protected int threadIncrement = 1;
   protected int duration = 1000;
+  protected ResultWriter resultWriter = new ResultWriterStdout();
   protected PerfTestFactory testFactory;
 
   @Override

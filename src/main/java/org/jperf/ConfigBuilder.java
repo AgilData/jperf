@@ -6,5 +6,6 @@ public interface ConfigBuilder {
   ConfigBuilder threadIncrement(int threadIncrement);
   ConfigBuilder duration(int duration);
   ConfigBuilder testFactory(PerfTestFactory testFactory);
+  ConfigBuilder resultWriter(ResultWriter resultWriter);
   PerfTestConfig build();
 }

@@ -5,6 +5,7 @@ public class DefaultConfigBuilder implements ConfigBuilder {
   int maxThreads = 10;
   int threadIncrement = 10;
   int duration = 1000;
+  ResultWriter resultWriter;
   PerfTestFactory testFactory;
 
   protected final PerfTestConfig config = new PerfTestConfig();
@@ -39,6 +40,12 @@ public class DefaultConfigBuilder implements ConfigBuilder {
   @Override
   public DefaultConfigBuilder testFactory(PerfTestFactory testFactory) {
     config.testFactory = testFactory;
+    return this;
+  }
+
+  @Override
+  public ConfigBuilder resultWriter(ResultWriter resultWriter) {
+    config.resultWriter = resultWriter;
     return this;
   }
 

@@ -81,12 +81,7 @@ public class JPerf {
 
     try {
 
-      final DecimalFormat df = new DecimalFormat("#,##0");
-
-      System.out.println(String.format("Running on %s with config: %s",
-          DateFormat.getDateTimeInstance().format(new Date()),
-          config
-      ));
+      config.resultWriter.writeHeader(config);
 
       // start testing
       int numActiveThread = 0;
@@ -106,7 +101,9 @@ public class JPerf {
           testRunner[i].getCounter().set(0);
         }
 
+        final long start = System.currentTimeMillis();
         Thread.sleep(config.duration);
+        final long actualDuration = System.currentTimeMillis() - start;
 
         // collect the totals
         long samples = 0;
@@ -114,12 +111,14 @@ public class JPerf {
           samples += testRunner[i].getCounter().get();
         }
 
-        System.out.println(String.format("With %d threads there were %s samples", threadCount, df.format(samples)));
+        config.resultWriter.writeResult(threadCount, actualDuration, samples);
       }
 
     } finally {
 
-      System.out.println("Stopping threads");
+      config.resultWriter.close();
+
+      // stop threads
       for (SingleTestRunner r : testRunner) {
         if (r != null) {
           r.stop();
@@ -135,7 +134,6 @@ public class JPerf {
           e.awaitTermination(5, TimeUnit.SECONDS);
         }
       }
-      System.out.println("Finished");
     }
   }
 
