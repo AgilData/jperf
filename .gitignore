@@ -1,4 +1,6 @@
 _*
+.*
 dist
 *.csv
 JPerf*.xml
+target
