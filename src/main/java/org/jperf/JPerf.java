@@ -59,16 +59,18 @@ public class JPerf {
 
   private static Options getCommandLineOptions() {
     Options options = new Options();
-    options.addOption(new Option("class", true, "Name of class that implemented org.jperf.PerfTest"));
-    options.addOption(new Option("minthreads", true, "The number of threads to start testing with"));
-    options.addOption(new Option("maxthreads", true, "The maximum number of threads to test with"));
-    options.addOption(new Option("duration", true, "The duration in milliseconds (per thread level)"));
+    options.addOption(new Option(CMD_LINE_ARG_CLASS, true, "Name of class that implemented org.jperf.PerfTest"));
+    options.addOption(new Option(CMD_LINE_ARG_MIN_THREAD, true, "The number of threads to start testing with"));
+    options.addOption(new Option(CMD_LINE_ARG_MAX_THREAD, true, "The maximum number of threads to test with"));
+    options.addOption(new Option(CMD_LINE_ARG_THREAD_INCREMENT, true, "The number of threads to increment by"));
+    options.addOption(new Option(CMD_LINE_ARG_DURATION, true, "The duration in milliseconds (per thread level)"));
     return options;
   }
 
   private static void showUsage() {
-    System.out.println("All arguments are optional, except for 'class'.");
     new HelpFormatter().printHelp("jperf", getCommandLineOptions(), true);
+    System.out.println();
+    System.out.println("All arguments are optional, except for 'class'.");
   }
 
   public static void run(final PerfTestConfig config) throws Exception {
