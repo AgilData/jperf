@@ -80,16 +80,17 @@ public class JPerf {
       config.resultWriter.writeHeader(config);
 
       // start testing
-      int numActiveThread = 0;
       for (int threadCount = config.minThreads; threadCount <= config.maxThreads; threadCount += config.threadIncrement) {
 
-        for (int i = numActiveThread; i < threadCount; i++) {
-          // create the executor
-          exec[i] = Executors.newSingleThreadExecutor();
-          // creat the test runner
-          testRunner[i] = new SingleTestRunner(config.testFactory.create());
-          // start the test runner
-          exec[i].execute(testRunner[i]);
+        for (int i = 0; i < threadCount; i++) {
+          if (exec[i] == null) {
+            // create the executor
+            exec[i] = Executors.newSingleThreadExecutor();
+            // creat the test runner
+            testRunner[i] = new SingleTestRunner(config.testFactory.create());
+            // start the test runner
+            exec[i].execute(testRunner[i]);
+          }
         }
 
         // reset the counters
