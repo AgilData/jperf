@@ -2,7 +2,7 @@ JPerf is a simple performance and scalability testing framework for Java. Think 
 
 JPerf is distributed under the Apache License 2.0 (see LICENSE.txt).
 
-The latest version can be downloaded from https://github.com/andygrove/jperf/releases
+The latest version can be downloaded from https://github.com/codefutures/jperf/releases
 
 JPerf can be used programmatically or from the command line to run scalability tests again any class 
 implementing the PerfTest interface.
