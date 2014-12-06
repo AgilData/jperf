@@ -14,13 +14,13 @@ public class DefaultConfigBuilder implements ConfigBuilder {
   }
 
   @Override
-  public DefaultConfigBuilder minThreads(int minThreads) {
+  public ConfigBuilder minThreads(int minThreads) {
     config.minThreads = minThreads;
     return this;
   }
 
   @Override
-  public DefaultConfigBuilder maxThreads(int maxThreads) {
+  public ConfigBuilder maxThreads(int maxThreads) {
     config.maxThreads = maxThreads;
     return this;
   }
@@ -32,13 +32,13 @@ public class DefaultConfigBuilder implements ConfigBuilder {
   }
 
   @Override
-  public DefaultConfigBuilder duration(int duration) {
+  public ConfigBuilder duration(int duration) {
     config.duration = duration;
     return this;
   }
 
   @Override
-  public DefaultConfigBuilder testFactory(PerfTestFactory testFactory) {
+  public ConfigBuilder testFactory(PerfTestFactory testFactory) {
     config.testFactory = testFactory;
     return this;
   }
@@ -49,8 +49,14 @@ public class DefaultConfigBuilder implements ConfigBuilder {
     return this;
   }
 
+  @Deprecated // use run() instead
   @Override
   public PerfTestConfig build() {
     return config;
+  }
+
+  @Override
+  public void run() throws Exception {
+    JPerf.run(config);
   }
 }
