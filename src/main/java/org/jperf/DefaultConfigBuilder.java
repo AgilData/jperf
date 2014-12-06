@@ -32,8 +32,20 @@ public class DefaultConfigBuilder implements ConfigBuilder {
   }
 
   @Override
-  public ConfigBuilder duration(int duration) {
-    config.duration = duration;
+  public ConfigBuilder duration(int durationPerThread) {
+    config.durationPerThread = durationPerThread;
+    return this;
+  }
+
+  @Override
+  public ConfigBuilder durationPerThread(int durationPerThread) {
+    config.durationPerThread = durationPerThread;
+    return this;
+  }
+
+  @Override
+  public ConfigBuilder durationTotal(int durationTotal) {
+    config.durationTotal = durationTotal;
     return this;
   }
 

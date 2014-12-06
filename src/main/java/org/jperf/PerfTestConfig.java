@@ -6,7 +6,8 @@ public class PerfTestConfig {
   protected int minThreads = 1;
   protected int maxThreads = 10;
   protected int threadIncrement = 1;
-  protected int duration = 1000;
+  protected int durationPerThread = 0;
+  protected int durationTotal = 0;
   protected ResultWriter resultWriter = new ResultWriterStdout();
   protected PerfTestFactory testFactory;
 
@@ -16,7 +17,8 @@ public class PerfTestConfig {
         "minThreads=" + minThreads +
         ", maxThreads=" + maxThreads +
         ", threadIncrement=" + threadIncrement +
-        ", duration=" + duration +
+        ", durationPerThread=" + durationPerThread +
+        ", durationTotal=" + durationTotal +
         '}';
   }
 }

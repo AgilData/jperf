@@ -71,6 +71,14 @@ public class JPerf {
 
   public static void run(final PerfTestConfig config) throws Exception {
 
+    // validate configs and set defaults
+    if (config.durationPerThread==0) {
+      if (config.durationTotal==0) {
+        throw new RuntimeException("No duration specified");
+      }
+      config.durationPerThread = config.durationTotal / config.maxThreads;
+    }
+
     // create executors and test runners (one of each per thread)
     final ExecutorService exec[] = new ExecutorService[config.maxThreads];
     final SingleTestRunner testRunner[] = new SingleTestRunner[config.maxThreads];
@@ -99,7 +107,7 @@ public class JPerf {
         }
 
         final long start = System.currentTimeMillis();
-        Thread.sleep(config.duration);
+        Thread.sleep(config.durationPerThread);
         final long actualDuration = System.currentTimeMillis() - start;
 
         // collect the totals
@@ -134,8 +142,13 @@ public class JPerf {
     }
   }
 
-  public static ConfigBuilder newConfigBuilder() {
+  public static ConfigBuilder newTestRun() {
     return new DefaultConfigBuilder();
+  }
+
+  @Deprecated
+  public static ConfigBuilder newConfigBuilder() {
+    return newTestRun();
   }
 
 }
