@@ -65,4 +65,4 @@ JPerf has dependencies on the following open source projects:
 - Apache CLI
 - Google Guava
 
-Copyright (C) 2007-2014 Andy Grove.
+Copyright (C) 2007-2014 CodeFutures
